@@ -1,0 +1,15 @@
+from unittest import TestCase
+import pandas as pd
+
+import reader
+
+
+class ReaderTest(TestCase):
+
+    def test_read_asc(self):
+        filepath = 'data/test.asc'
+        data = reader.read_asc(filepath, 'user_id', 'skill_id', 'correct')
+        expected = pd.DataFrame({'user_id': [0, 0, 0, 1, 1, 1, 1, 1, 2, 2],
+                                 'skill_id': [1, 2, 3, 3, 4, 2, 1, 0, 1, 1],
+                                 'correct': [0, 0, 1, 0, 0, 0, 1, 1, 0, 1]})
+        self.assertTrue(expected.equals(data[expected.columns]))

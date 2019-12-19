@@ -9,4 +9,21 @@ A python project that allows easy management of knowledge tracing data
  - Filter data
    - By maximum attempt count (by splitting or cutting)
    - By minimum attempt count
+ - Split into train and test set
 
+
+ ### Attempts-skills-corrects (asc) format
+ Contains student attempt sequences in row triples that contain:
+ 1. Number of attempts
+ 2. Skill ids of attempts
+ 3. Attempt correctnesses
+ 
+Example contents of for two students:
+ ```
+3
+1,2,3
+0,0,1
+2
+1,1
+0,1
+```

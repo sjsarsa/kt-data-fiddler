@@ -1,6 +1,4 @@
-import pandas as pd
-import os.path as osp
-from utils import group_data, ungroup_data
+from utils import group_data
 
 
 def to_asc(data, filepath, student_column, skill_column, correct_column):
@@ -15,20 +13,7 @@ def to_asc(data, filepath, student_column, skill_column, correct_column):
             f.write(','.join(corrects) + '\n')
 
 
-format_suffix_map = {
-    'csv': '.csv',
-    'pickle': '.pkl',
-    'hdf': '.hdf',
-    'asc': '.asc'
-}
-
-
 def write(data, filepath, format='csv', student_column='user_id', skill_column='skill_id', correct_column='correct'):
-    file_extension = osp.splitext(filepath)[-1]
-    standard_extension = format_suffix_map[format]
-    if file_extension != standard_extension:
-        print('Warning: filepath extension {} does not match default format extension {}'.format(
-            file_extension, standard_extension))
     if format == 'csv':
         data.to_csv(filepath, index=False)
     elif format == 'hdf':

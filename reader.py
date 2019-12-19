@@ -44,10 +44,10 @@ def read_asc(filepath, student_column, skill_column, correct_column):
             all_skill_ids.append(student_skill_ids)
             all_corrects.append(student_corrects)
             line += 3
-
-    ungrouped = ungroup_data(pd.DataFrame({skill_column: all_skill_ids, correct_column: all_corrects}))
-    ungrouped[student_column] = ungrouped.index.to_series()
-    return ungrouped
+    grouped = pd.DataFrame({skill_column: all_skill_ids, correct_column: all_corrects})
+    grouped[student_column] = grouped.index.to_series().apply(lambda x: [x] * len(grouped[correct_column][x]))
+    ungrouped = ungroup_data(grouped)
+    return ungrouped.applymap(int)
 
 
 read_func_map = {

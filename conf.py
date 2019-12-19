@@ -1,5 +1,4 @@
 from numpy import inf
-from datetime import datetime
 
 args_map = {
     'min_attempt_count': {
@@ -72,5 +71,16 @@ args_map = {
         'type': int,
         'help': 'Set to 1 to group ungrouped data into student sequences. \
                  \nThis will have no effect for grouped data.'
+    },
+    'train_test_split': {
+        'default': 0.,
+        'type': float,
+        'help': 'Provide a train test split rate value between 0 and 1 to create a train and test split. \
+                \nCreates two additional files named out_data_file.train and out_data_file.test'
+    },
+    'train_test_shuffle': {
+        'default': 1,
+        'type': int,
+        'help': 'Whether to shuffle data before splitting to train and test set, 0 is false and 1 is true'
     }
 }

@@ -1,22 +1,23 @@
 from unittest import TestCase
-import os.path as osp
 import os
 from shared_test_data import data1
 
 import writer
 
+tmpdir = 'test_tmp'
 
-class Test(TestCase):
+
+class WriterTest(TestCase):
     @classmethod
     def setUpClass(cls):
-        os.mkdir('tmp')
+        os.mkdir(tmpdir)
 
     @classmethod
     def tearDownClass(cls):
-        os.rmdir('tmp')
+        os.rmdir(tmpdir)
 
     def test_to_asc(self):
-        filepath = 'tmp/test.asc'
+        filepath = tmpdir + '/test.asc'
         writer.write(data1, filepath, format='asc')
 
         expected = """

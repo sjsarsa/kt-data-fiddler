@@ -114,3 +114,19 @@ def clean_data(data, skill_column, correct_column):
     data[correct_column] = (data[correct_column] == max_pass_percentage).apply(int)
     return data
 
+
+def validate_file_suffix(filepath, format):
+    format_suffix_map = {
+        'csv': '.csv',
+        'pickle': '.pkl',
+        'hdf': '.hdf',
+        'asc': '.asc'
+    }
+
+    file_extension = osp.splitext(filepath)[-1]
+    standard_extension = format_suffix_map[format]
+    if file_extension != standard_extension:
+        print('Warning: filepath extension {} does not match default format extension {}'.format(
+            file_extension, standard_extension))
+        return False
+    return True

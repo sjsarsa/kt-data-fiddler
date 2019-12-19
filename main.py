@@ -1,29 +1,11 @@
+import argparse
 import os
 from os import path as osp
 
-import reader
-
-
-def init_ipython():
-    """
-    Ipython config
-
-    Adds local dependencies to syspath
-    """
-
-    # Set work dir as parent folder of code-dkt
-    home = os.environ['HOME']
-    workdir = osp.join(home, 'tohtori/models/code-dkt/')
-    os.chdir(workdir)
-
-    import sys
-
-    sys.path.append(workdir)
-
-
-import argparse
 import conf
+import reader
 import utils
+import writer
 
 
 class Args(object):
@@ -50,8 +32,23 @@ def run(args=None):
         out_data = utils.clean_data(out_data, skill_column=args.skill_column, correct_column=args.correct_column)
     else:
         out_data = in_data
-    utils.write(out_data, args.out_data_file, args.out_format)
-    print('Wrote ', args.out_data_file)
+
+    utils.validate_file_suffix(args.out_data_file, format=args.out_format)
+    if args.train_test_split > 0 and args.train_test_split < 1:
+        if args.train_test_split > .5:
+            print("Warning: train test split rate is above .5, this means test set will be larger than train test.")
+        n_train = int(len(out_data) * (1 - args.train_test_split))
+
+        train_out_file = args.out_data_file + '.train'
+        writer.write(out_data.iloc[:n_train], train_out_file, args.out_format)
+        print('Wrote', train_out_file)
+
+        test_out_file = args.out_data_file + '.test'
+        writer.write(out_data.iloc[n_train:], test_out_file, args.out_format)
+        print('Wrote', test_out_file)
+    else:
+        writer.write(out_data, args.out_data_file, args.out_format)
+        print('Wrote', args.out_data_file)
 
 
 if __name__ == "__main__":
