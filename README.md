@@ -3,7 +3,7 @@ A python project that allows easy management of knowledge tracing data
 
  - Easy conversion between commonly used data format
  - Data cleaning 
-   - Convert non-binary make correctnesses into binary correctness
+   - Convert non-binary correctnesses into binary correctness
    - Remove (csv) rows where critical values are missing
  - Group non-grouped data by students to obtain attempt sequences per student
  - Filter data
@@ -17,8 +17,8 @@ A python project that allows easy management of knowledge tracing data
  1. Number of attempts
  2. Skill ids of attempts
  3. Attempt correctnesses
- 
-Example contents of for two students:
+
+Example contents for two students:
  ```
 3
 1,2,3
