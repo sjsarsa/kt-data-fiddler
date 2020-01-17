@@ -20,11 +20,11 @@ args_map = {
                   \nRemove removes students similarly to min_attempt_count). \
                   \nCut removes attempts beyond max attempt count'
     },
-    'in_data_file': {
+    'in_file': {
         'default': 'data/code-mooc-df.pkl',
         'type': str,
         'help': ' '
-    }, 'out_data_file': {
+    }, 'out_file': {
         'default': 'data/new-dkt-data-file.csv',
         'type': str,
         'help': ' '
@@ -41,46 +41,75 @@ args_map = {
     'out_format': {
         'default': 'csv',
         'type': str,
-        'choices': ['pickle_dataframe', 'csv', 'hdf_dataframe', 'asc'],
+        'choices': ['pickle_dataframe', 'csv', 'tsv', 'hdf_dataframe', 'asc', 'yudelson_bkt'],
     },
-    'skill_column': {
+    'in_header': {
+        'default': False,
+        'action': 'store_true',
+        'help': 'For csv and tsv: whether the input file contains a header or not.'
+    },
+    'out_header': {
+        'default': False,
+        'action': 'store_true',
+        'help': 'For csv and tsv: whether to include header in outpute file.'
+    },
+    'skill_col': {
         'default': 'skill_id',
         'type': str,
     },
-    'correct_column': {
+    'exercise_col': {
+        'default': None,
+        'type': str,
+    },
+    'correct_col': {
         'default': 'correct',
         'type': str,
     },
-    'user_column': {
+    'user_col': {
         'default': 'user_id',
         'type': str,
     },
     'clean': {
         'default': 0,
         'type': int,
-        'help': 'Set to 1 to clean data. Cleaning catgegorizes skill ids and turns correctnesses into binary variables. \
+        'choices': [0, 1],
+        'help': 'Set to 1 to clean data. Cleaning categorizes skill ids and turns correctnesses into binary variables. \
                  Maximum correctness value per skill id is considered as correct for correctness binarization.'
     },
     'is_grouped': {
         'default': 0,
         'type': int,
+        'choices': [0, 1],
         'help': 'Set to 1 if data is grouped into student attempts. This is redundant for "asc" format as it is always grouped.'
     },
     'group_data': {
         'default': 0,
         'type': int,
+        'choices': [0, 1],
         'help': 'Set to 1 to group ungrouped data into student sequences. \
                  \nThis will have no effect for grouped data.'
     },
-    'train_test_split': {
+    'test_rate': {
         'default': 0.,
         'type': float,
-        'help': 'Provide a train test split rate value between 0 and 1 to create a train and test split. \
+        'help': 'Provide a test data rate value between 0 and 1 to create a train and test split. \
                 \nCreates two additional files named out_data_file.train and out_data_file.test'
     },
-    'train_test_shuffle': {
-        'default': 1,
+    'validation_rate': {
+        'default': 0.,
+        'type': float,
+        'help': 'Provide a validation rate value between 0 and 1 to create a validation split in addition to train and test split. \
+                \nSplits test set further into validation and test set and creates out_data_file.val'
+    },
+    'kfold': {
+        'default': 0,
         'type': int,
-        'help': 'Whether to shuffle data before splitting to train and test set, 0 is false and 1 is true'
+        'help': 'Integer above 1 will generate a k-fold split of train and test files'
+    },
+    'shuffle': {
+        'default': False,
+        'type': bool,
+        'action': 'store_true',
+        'help': 'Whether to shuffle data'
     }
 }

@@ -6,6 +6,10 @@ def read_csv(filepath):
     return pd.read_csv(filepath, encoding='latin', low_memory=False)
 
 
+def read_tsv(filepath):
+    return pd.read_csv(filepath, encoding='latin', low_memory=False, sep='\t')
+
+
 def read_asc(filepath, student_column, skill_column, correct_column):
     line = 0
     all_skill_ids = []

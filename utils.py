@@ -102,21 +102,23 @@ Run the command with argument --help for more information.
 """.format(col_description, col, df.columns.values, col_description.lower())
 
 
-def clean_data(data, skill_column, correct_column):
-    assert_column_exists(data, skill_column, 'Skill')
+def clean_data(data, skill_col, correct_col):
+    assert_column_exists(data, skill_col, 'Skill')
     # Categorize skill ids
-    data[skill_column] = data[skill_column].astype('category')
-    data[skill_column].cat.categories = range(len(data[skill_column].cat.categories))
-    assert_column_exists(data, correct_column, 'Exercise correctness')
+    data[skill_col] = data[skill_col].astype('category')
+    data[skill_col].cat.categories = range(len(data[skill_col].cat.categories))
+    assert_column_exists(data, correct_col, 'Exercise correctness')
     # Convert correctness to binary
-    max_percentages_per_exercise = data.groupby([skill_column])[correct_column].max().to_dict()
-    max_pass_percentage = data[skill_column].apply(lambda x: max_percentages_per_exercise[x])
-    data[correct_column] = (data[correct_column] == max_pass_percentage).apply(int)
+    max_percentages_per_exercise = data.groupby([skill_col])[correct_col].max().to_dict()
+    max_pass_percentage = data[skill_col].apply(lambda x: max_percentages_per_exercise[x])
+    data[correct_col] = (data[correct_col] == max_pass_percentage).apply(int)
     return data
 
 
 def validate_file_suffix(filepath, format):
     format_suffix_map = {
+        'yudelson_bkt': '.tsv',
+        'tsv': '.tsv',
         'csv': '.csv',
         'pickle': '.pkl',
         'hdf': '.hdf',
