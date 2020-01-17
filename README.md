@@ -27,3 +27,19 @@ Example contents for two students:
 1,1
 0,1
 ```
+
+### TODO:
+#### Requirements
+ - Write installations instructions
+ - requirements.txt
+#### Simplify usage
+ - Easy-to-use defaults (currently we have only yudelson-bkt)
+ - Example scripts
+#### Features
+ - Header management for csv / tsv
+    - Use order when none are provided
+#### Improvements
+ - Yudelson bkt
+   - Integrate better to enable use with other options
+#### Tests
+ - yudelson_bkt
