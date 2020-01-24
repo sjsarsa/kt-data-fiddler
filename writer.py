@@ -32,7 +32,11 @@ def write(data, filepath, format='csv', student_col='user_id', skill_col='skill_
 
 
 def to_yudelson_bkt(data, filepath, student_col, skill_col, correct_col, exercise_col):
+    if exercise_col == skill_col:
+        skill_col = exercise_col + '-is-actually-exercise'
+        data[skill_col] = data[exercise_col]
     data = data[[correct_col, student_col, exercise_col, skill_col]]
+    print('Cleaning data...')
     data = utils.clean_data(data.dropna(), skill_col, correct_col)
     data[correct_col] = -(data[correct_col] - 1) + 1
     data[exercise_col] = 'exercise' + data[exercise_col].astype(str)

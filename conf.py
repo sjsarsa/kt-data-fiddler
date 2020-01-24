@@ -70,23 +70,20 @@ args_map = {
         'type': str,
     },
     'clean': {
-        'default': 0,
-        'type': int,
-        'choices': [0, 1],
-        'help': 'Set to 1 to clean data. Cleaning categorizes skill ids and turns correctnesses into binary variables. \
+        'default': False,
+        'action': 'store_true',
+        'help': 'Whether to clean data. Cleaning categorizes skill ids and turns correctnesses into binary variables. \
                  Maximum correctness value per skill id is considered as correct for correctness binarization.'
     },
     'is_grouped': {
-        'default': 0,
-        'type': int,
-        'choices': [0, 1],
-        'help': 'Set to 1 if data is grouped into student attempts. This is redundant for "asc" format as it is always grouped.'
+        'default': False,
+        'action': 'store_true',
+        'help': 'Whether data is grouped into student attempts. This is redundant for "asc" format as it is always grouped.'
     },
     'group_data': {
-        'default': 0,
-        'type': int,
-        'choices': [0, 1],
-        'help': 'Set to 1 to group ungrouped data into student sequences. \
+        'default': False,
+        'action': 'store_true',
+        'help': 'Whether to group ungrouped data into student sequences. \
                  \nThis will have no effect for grouped data.'
     },
     'test_rate': {

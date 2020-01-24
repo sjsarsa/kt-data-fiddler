@@ -46,10 +46,10 @@ Found columns:
         out_data = utils.clean_data(out_data, skill_col=args.skill_col, correct_col=args.correct_col)
     else:
         print('Data rows before dropping nan rows: {}'.format(len(in_data)))
-        out_data = in_data[use_cols].dropna()
+        out_data = in_data
         print('Data rows after dropping nan rows: {}'.format(len(out_data)))
 
-    if args.shuffle == 1:
+    if args.shuffle:
         grouped = utils.group_data(out_data, args.user_col)
         out_data = utils.ungroup_data(grouped.sample(frac=1).reset_index(drop=True))
 
@@ -118,5 +118,5 @@ if __name__ == "__main__":
                                 help=str(val.get('help') or '') + '(default: %(default)s)',
                                 choices=val.get('choices'),
                                 type=val.get('type'))
-        args = parser.parse_args()
-        run(args)
+    args = parser.parse_args()
+    run(args)

@@ -106,12 +106,13 @@ def clean_data(data, skill_col, correct_col):
     assert_column_exists(data, skill_col, 'Skill')
     # Categorize skill ids
     data[skill_col] = data[skill_col].astype('category')
+    print(data[skill_col])
     data[skill_col].cat.categories = range(len(data[skill_col].cat.categories))
     assert_column_exists(data, correct_col, 'Exercise correctness')
     # Convert correctness to binary
     max_percentages_per_exercise = data.groupby([skill_col])[correct_col].max().to_dict()
     max_pass_percentage = data[skill_col].apply(lambda x: max_percentages_per_exercise[x])
-    data[correct_col] = (data[correct_col] == max_pass_percentage).apply(int)
+    data[correct_col] = ((data[correct_col] == max_pass_percentage) * data[correct_col]).apply(np.ceil).apply(int)
     return data
 
 

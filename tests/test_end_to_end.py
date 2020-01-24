@@ -35,6 +35,8 @@ class EndToEndTest(TestCase):
 
         expected = pd.read_csv(test_args['in_file'])
         created = pd.read_csv(test_args['out_file'])
+        print(expected)
+        print(created)
         self.assertTrue(expected.equals(created))
 
     def test_from_tsv_equals_to_tsv(self):
@@ -66,6 +68,8 @@ class EndToEndTest(TestCase):
         expected.exercise_id = 'exercise' + expected.exercise_id.astype(str)
         expected.skill_id = 'skill' + expected.skill_id.astype(str)
 
+        print(expected)
+        print(created)
         self.assertTrue(np.alltrue(expected.values == created.values))
 
     def test_from_asc_equals_to_asc(self):
