@@ -17,20 +17,18 @@ class Args(object):
             self.__dict__[key] = val['default']
 
 
-def save_data(args, out_data, out_file):
-    utils.validate_file_suffix(out_file, format=args.out_format)
-
-    if args.test_rate > 0 and args.test_rate < 1:
+def save_data(args, out_data):
+    if args.test_rate is not None:
         # Write to train and test files
-        split_to_train_test(out_data, args)
-    elif args.kfold > 1:
+        save_to_train_test(out_data, args)
+    if args.kfold is not None:
         # Write to kfold files train and test files
-        split_to_kfold(out_data, args)
-    else:
+        save_to_kfold(out_data, args)
+    if args.out_file is not None:
         # Write data to file
-        writer.write(out_data, out_file, args.out_format, args.user_col, args.skill_col, args.correct_col,
+        writer.write(out_data, args.out_file, args.out_format, args.user_col, args.skill_col, args.correct_col,
                      args.exercise_col)
-        print('Wrote', out_file)
+        print('Wrote', args.out_file)
 
 
 def show_stats(data, format, student_col, exercise_col, skill_col, correct_col):
@@ -68,9 +66,12 @@ def show_stats(data, format, student_col, exercise_col, skill_col, correct_col):
     return stats_str
 
 
-def fiddle(args, in_file, out_file=None):
+def fiddle(args):
+    if args is None:
+        args = Args(conf.args_map)
+
     print('Reading data...')
-    in_data = reader.read(in_file, args.in_format)
+    in_data = reader.read(args.in_file, args.in_format)
 
     use_cols = [args.user_col, args.correct_col, args.skill_col]
     if args.exercise_col is not None:
@@ -105,22 +106,15 @@ Found columns:
 
     show_stats(out_data, args.show_statistics, args.user_col, args.exercise_col, args.skill_col, args.correct_col)
 
-    if out_file is not None:
-        save_data(args, out_data, out_file)
+    save_data(args, out_data)
 
 
-def run(args=None):
-    if args is None:
-        args = Args(conf.args_map)
-
-    fiddle(args, args.in_file, args.out_file)
-
-
-def split_to_train_test(out_data, args):
+def save_to_train_test(out_data, args):
+    out_file = args.out_file or args.in_file
     if args.test_rate > .5:
         print("Warning: train test split rate is above .5, this means test set will be larger than train test.")
     n_test = int(len(out_data) * args.test_rate)
-    test_out_file = args.out_file + '.test'
+    test_out_file = out_file + '.test'
     writer.write(out_data.iloc[:n_test], test_out_file, args.out_format, args.user_col, args.skill_col,
                  args.correct_col, args.exercise_col)
     print('Wrote', test_out_file)
@@ -128,23 +122,24 @@ def split_to_train_test(out_data, args):
     n_valid = 0
     if args.validation_rate > 0 and args.validation_rate < 1:
         n_valid = int(len(out_data) * args.validation_rate)
-        validation_out_file = args.out_file + '.valid'
+        validation_out_file = out_file + '.valid'
         writer.write(out_data.iloc[n_test:n_test + n_valid], validation_out_file, args.out_format, args.user_col,
                      args.skill_col, args.correct_col, args.exercise_col)
         print('Wrote', validation_out_file)
 
-    train_out_file = args.out_file + '.train'
+    train_out_file = out_file + '.train'
     writer.write(out_data.iloc[n_test + n_valid:], train_out_file, args.out_format, args.user_col, args.skill_col,
                  args.correct_col, args.exercise_col)
     print('Wrote', train_out_file)
 
 
-def split_to_kfold(out_data, args):
+def save_to_kfold(out_data, args):
+    out_file = args.out_file or args.in_file
     kfold = KFold(n_splits=args.kfold, shuffle=args.shuffle)
 
     for i, (train_i, test_i) in enumerate(kfold.split(out_data)):
         for set_name, set_index in [('train', train_i), ('test', test_i)]:
-            filename = '{}.{}.{}'.format(args.out_file, set_name, i)
+            filename = '{}.{}.{}'.format(out_file, set_name, i)
             writer.write(out_data.iloc[set_index], filename, args.out_format, args.user_col, args.skill_col,
                          args.correct_col, args.exercise_col)
             print('Wrote', filename)
@@ -169,4 +164,4 @@ if __name__ == "__main__":
                                 choices=val.get('choices'),
                                 type=val.get('type'))
     args = parser.parse_args()
-    run(args)
+    fiddle(args)

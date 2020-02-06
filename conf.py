@@ -1,4 +1,28 @@
 from numpy import inf
+from argparse import ArgumentTypeError
+
+
+def positive_int(x):
+    try:
+        x = int(x)
+    except ValueError:
+        raise ArgumentTypeError(f"{x} not an integer literal")
+
+    if x < 1:
+        raise ArgumentTypeError(f"{x} is less than 1")
+    return x
+
+
+def restricted_float(x):
+    try:
+        x = float(x)
+    except ValueError:
+        raise ArgumentTypeError(f"{x} not a floating-point literal")
+
+    if 0.0 > x > 1.0:
+        raise ArgumentTypeError(f"{x} not in range [0.0, 1.0]")
+    return x
+
 
 args_map = {
     'show_statistics': {
@@ -8,12 +32,12 @@ args_map = {
     },
     'min_attempt_count': {
         'default': 2,
-        'type': int,
+        'type': positive_int,
         'help': 'Remove students with less than min attempt count attempts.'
     },
     'max_attempt_count': {
         'default': inf,
-        'type': int,
+        'type': positive_int,
         'help': 'Apply maximum attempt count to filter or split attempt sequences'
     },
     'max_attempt_filter': {
@@ -84,20 +108,20 @@ args_map = {
                  \nThis will have no effect for grouped data.'
     },
     'test_rate': {
-        'default': 0.,
-        'type': float,
+        'default': None,
+        'type': restricted_float,
         'help': 'Provide a test data rate value between 0 and 1 to create a train and test split. \
                 \nCreates two additional files named out_data_file.train and out_data_file.test'
     },
     'validation_rate': {
-        'default': 0.,
-        'type': float,
+        'default': None,
+        'type': restricted_float,
         'help': 'Provide a validation rate value between 0 and 1 to create a validation split in addition to train and test split. \
                 \nSplits test set further into validation and test set and creates out_data_file.val'
     },
     'kfold': {
-        'default': 0,
-        'type': int,
+        'default': None,
+        'type': positive_int,
         'help': 'Integer above 1 will generate a k-fold split of train and test files'
     },
     'shuffle': {

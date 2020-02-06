@@ -5,6 +5,7 @@ currently mainly data manipulation TODO: maybe refactor as data utils
 import numpy as np
 import pandas as pd
 import os.path as osp
+import re
 
 
 def filter_data(data, correct_column, min_attempt_count=5, max_attempt_count=None, max_filter_mode='split'):
@@ -125,7 +126,7 @@ def validate_file_suffix(filepath, format):
         'asc': '.asc'
     }
 
-    file_extension = osp.splitext(filepath)[-1]
+    file_extension = osp.splitext(re.sub('[.](train|test)?[.]?[0-9]*$', '', filepath))[-1]
     standard_extension = format_suffix_map[format]
     if file_extension != standard_extension:
         print('Warning: filepath extension {} does not match default format extension {}'.format(

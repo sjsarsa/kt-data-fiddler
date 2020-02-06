@@ -15,6 +15,7 @@ def to_asc(data, filepath, student_col, skill_col, correct_col):
 
 
 def write(data, filepath, format='csv', student_col='user_id', skill_col='skill_id', correct_col='correct', exercise_col=None):
+    utils.validate_file_suffix(filepath, format=format)
     if format == 'csv':
         data.to_csv(filepath, index=False)
     elif format == 'tsv':
