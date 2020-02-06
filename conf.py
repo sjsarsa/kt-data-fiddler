@@ -1,6 +1,11 @@
 from numpy import inf
 
 args_map = {
+    'show_statistics': {
+        'default': 'txt',
+        'type': str,
+        'choices': ['txt', 'tex', 'csv', 'json']
+    },
     'min_attempt_count': {
         'default': 2,
         'type': int,
@@ -20,16 +25,8 @@ args_map = {
                   \nRemove removes students similarly to min_attempt_count). \
                   \nCut removes attempts beyond max attempt count'
     },
-    'in_file': {
-        'default': 'data/code-mooc-df.pkl',
-        'type': str,
-        'help': ' '
-    }, 'out_file': {
-        'default': 'data/new-dkt-data-file.csv',
-        'type': str,
-        'help': ' '
-    }, 'in_format': {
-        'default': 'pickle',
+    'in_format': {
+        'default': 'csv',
         'choices': ['pickle_dataframe', 'csv', 'hdf_dataframe', 'asc'],
         'type': str,
         'help': '"hdf" assumes only one dataframe is saved in the file \

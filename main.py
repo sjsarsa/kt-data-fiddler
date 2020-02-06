@@ -3,6 +3,8 @@ import os
 from os import path as osp
 from sklearn.model_selection import KFold
 
+import numpy as np
+import pandas as pd
 import conf
 import reader
 import utils
@@ -15,12 +17,60 @@ class Args(object):
             self.__dict__[key] = val['default']
 
 
-def run(args=None):
-    if args is None:
-        args = Args(conf.args_map)
+def save_data(args, out_data, out_file):
+    utils.validate_file_suffix(out_file, format=args.out_format)
 
+    if args.test_rate > 0 and args.test_rate < 1:
+        # Write to train and test files
+        split_to_train_test(out_data, args)
+    elif args.kfold > 1:
+        # Write to kfold files train and test files
+        split_to_kfold(out_data, args)
+    else:
+        # Write data to file
+        writer.write(out_data, out_file, args.out_format, args.user_col, args.skill_col, args.correct_col,
+                     args.exercise_col)
+        print('Wrote', out_file)
+
+
+def show_stats(data, format, student_col, exercise_col, skill_col, correct_col):
+    def round_to_k(x):
+        return f'{int(round(x, -3) / 1000)}k'
+
+    usecols = [student_col, skill_col, correct_col]
+    if exercise_col != skill_col and exercise_col is not None:
+        usecols.append(exercise_col)
+
+    grouped = utils.group_data(data[usecols].dropna(), student_col)
+    stats_dict = {
+        'Max attempts': grouped[student_col].apply(len).max(),
+        'Students': len(grouped),
+        'Records': round_to_k(len(data)),
+        'Correct count': round_to_k(sum(data[correct_col])),
+        'Exercise tags': len(data[exercise_col].unique()) if exercise_col is not None else len(data[skill_col].unique()),
+        'Skill tags': len(data[skill_col].unique()) if exercise_col is not None and skill_col != exercise_col else '-'
+    }
+
+    stats = pd.DataFrame({k: [v] for k, v in stats_dict.items()})
+
+    if format == 'json':
+        stats_str = stats.to_json()
+    if format == 'txt':
+        stats_str = stats.to_string(index=False)
+    elif format == 'csv':
+        stats_str = stats.to_csv(index=False)
+    elif format == 'tex':
+        stats_str = stats.to_latex(index=False)
+    else:
+        raise NotImplementedError(f'Statistics format {format} is not implemented.')
+
+    print(stats_str)
+    return stats_str
+
+
+def fiddle(args, in_file, out_file=None):
     print('Reading data...')
-    in_data = reader.read(args.in_file, args.in_format)
+    in_data = reader.read(in_file, args.in_format)
 
     use_cols = [args.user_col, args.correct_col, args.skill_col]
     if args.exercise_col is not None:
@@ -47,25 +97,23 @@ Found columns:
     else:
         print('Data rows before dropping nan rows: {}'.format(len(in_data)))
         out_data = in_data
-        print('Data rows after dropping nan rows: {}'.format(len(out_data)))
+        print('Data rows after dropping nan rows: {}'.format(len(out_data.dropna())))
 
     if args.shuffle:
         grouped = utils.group_data(out_data, args.user_col)
         out_data = utils.ungroup_data(grouped.sample(frac=1).reset_index(drop=True))
 
-    utils.validate_file_suffix(args.out_file, format=args.out_format)
+    show_stats(out_data, args.show_statistics, args.user_col, args.exercise_col, args.skill_col, args.correct_col)
 
-    if args.test_rate > 0 and args.test_rate < 1:
-        # Write to train and test files
-        split_to_train_test(out_data, args)
-    elif args.kfold > 1:
-        # Write to kfold files train and test files
-        split_to_kfold(out_data, args)
-    else:
-        # Write data to file
-        writer.write(out_data, args.out_file, args.out_format, args.user_col, args.skill_col, args.correct_col,
-                     args.exercise_col)
-        print('Wrote', args.out_file)
+    if out_file is not None:
+        save_data(args, out_data, out_file)
+
+
+def run(args=None):
+    if args is None:
+        args = Args(conf.args_map)
+
+    fiddle(args, args.in_file, args.out_file)
 
 
 def split_to_train_test(out_data, args):
@@ -105,6 +153,8 @@ def split_to_kfold(out_data, args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Parametrized knowledge tracing done simple, maybe',
                                      formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('in_file')
+    parser.add_argument('out_file', nargs='?')
     for key, val in conf.args_map.items():
         if val.get('action'):
             parser.add_argument('--' + key,

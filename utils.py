@@ -106,7 +106,6 @@ def clean_data(data, skill_col, correct_col):
     assert_column_exists(data, skill_col, 'Skill')
     # Categorize skill ids
     data[skill_col] = data[skill_col].astype('category')
-    print(data[skill_col])
     data[skill_col].cat.categories = range(len(data[skill_col].cat.categories))
     assert_column_exists(data, correct_col, 'Exercise correctness')
     # Convert correctness to binary
