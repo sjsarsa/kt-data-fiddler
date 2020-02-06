@@ -10,6 +10,8 @@ A python project that allows easy management of knowledge tracing data
    - By maximum attempt count (by splitting or cutting)
    - By minimum attempt count
  - Split into train and test set
+ - Split into kfold train and test sets
+ - Print data statistics in different formats
 
 
  ### Attempts-skills-corrects (asc) format
