@@ -53,7 +53,7 @@ def show_stats(data, format, student_col, exercise_col, skill_col, correct_col):
 
     if format == 'json':
         stats_str = stats.to_json()
-    if format == 'txt':
+    elif format == 'txt':
         stats_str = stats.to_string(index=False)
     elif format == 'csv':
         stats_str = stats.to_csv(index=False)
