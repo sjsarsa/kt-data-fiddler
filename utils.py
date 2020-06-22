@@ -118,7 +118,7 @@ def clean_data(data, skill_col, correct_col):
 
 def validate_file_suffix(filepath, format):
     format_suffix_map = {
-        'yudelson_bkt': '.tsv',
+        'yudelson-bkt': '.tsv',
         'tsv': '.tsv',
         'csv': '.csv',
         'pickle': '.pkl',

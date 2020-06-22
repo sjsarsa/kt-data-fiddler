@@ -26,7 +26,7 @@ def write(data, filepath, format='csv', student_col='user_id', skill_col='skill_
         data.to_pickle(filepath)
     elif format == 'asc':
         to_asc(data, filepath, student_col, skill_col, correct_col)
-    elif format == 'yudelson_bkt':
+    elif format == 'yudelson-bkt':
         to_yudelson_bkt(data, filepath, student_col, skill_col, correct_col, exercise_col)
     else:
         raise NotImplementedError("Provided output format {} is not supported".format(format))

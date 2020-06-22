@@ -104,7 +104,7 @@ Found columns:
         grouped = utils.group_data(out_data, args.user_col)
         out_data = utils.ungroup_data(grouped.sample(frac=1).reset_index(drop=True))
 
-    show_stats(out_data, args.show_statistics, args.user_col, args.exercise_col, args.skill_col, args.correct_col)
+    show_stats(out_data, args.stat_format, args.user_col, args.exercise_col, args.skill_col, args.correct_col)
 
     save_data(args, out_data)
 

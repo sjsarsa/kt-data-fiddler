@@ -20,5 +20,5 @@ grouped_test_dataframes = [grouped_data1, grouped_data2]
 
 def dict_to_obj(my_dict, name='X'):
     return namedtuple(
-        name, my_dict.keys()
+        name.replace('-', '_'), (k.replace('-', '_') for k in my_dict.keys())
     )(*[x if not isinstance(x, dict) else dict_to_obj(x) for x in my_dict.values()])
