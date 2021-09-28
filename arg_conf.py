@@ -2,6 +2,31 @@ from numpy import inf
 from argparse import ArgumentTypeError
 
 
+class Args(object):
+    def __init__(self, args_dict):
+        for key, val in args_dict.items():
+            self.__dict__[key] = val['default']
+
+
+def parse_args(parser, arg_map):
+    parser.add_argument('in_file')
+    parser.add_argument('out_file', nargs='?')
+    for key, val in {**common_args_map, **arg_map}.items():
+        if val.get('action'):
+            parser.add_argument('--' + key,
+                                default=val.get('default'),
+                                action=val.get('action'),
+                                help=str(val.get('help') or '') + '(default: %(default)s)')
+        else:
+            parser.add_argument('--' + key,
+                                default=val.get('default'),
+                                nargs=val.get('nargs'),
+                                help=str(val.get('help') or '') + '(default: %(default)s)',
+                                choices=val.get('choices'),
+                                type=val.get('type'))
+    return parser.parse_args()
+
+
 def positive_int(x):
     try:
         x = int(x)
@@ -24,7 +49,21 @@ def restricted_float(x):
     return x
 
 
-args_map = {
+common_args_map = {
+    'in-format': {
+        'default': 'csv',
+        'choices': ['pickle', 'csv', 'hdf', 'asc'],
+        'type': str,
+        'help': 'pickle assumes a saved dataframe \
+                 \n"hdf" assumes only one dataframe is saved in the file \
+                 \n"asc" is a file format where row triplets contain data per student: \
+                 \n #1: number of attempts \
+                 \n #2: skill-ids \
+                 \n #3: correctnesses'
+    },
+}
+
+converter_args_map = {
     'stat-format': {
         'default': 'txt',
         'type': str,
@@ -49,20 +88,11 @@ args_map = {
                   \nRemove removes students similarly to min-attempt-count). \
                   \nCut removes attempts beyond max attempt count'
     },
-    'in-format': {
-        'default': 'csv',
-        'choices': ['pickle-dataframe', 'csv', 'hdf-dataframe', 'asc'],
-        'type': str,
-        'help': '"hdf" assumes only one dataframe is saved in the file \
-                 \n"asc" is a file format where row triplets contain data per student: \
-                 \n #1: number of attempts \
-                 \n #2: skill-ids \
-                 \n #3: correctnesses'
-    },
     'out-format': {
         'default': 'csv',
         'type': str,
-        'choices': ['pickle-dataframe', 'csv', 'tsv', 'hdf-dataframe', 'asc', 'yudelson-bkt'],
+        'choices': ['pickle', 'csv', 'tsv', 'hdf', 'asc', 'yudelson-bkt'],
+        'help': 'pickle and hdf will contain a compressed dataframe'
     },
     'in-header': {
         'default': False,
@@ -72,7 +102,7 @@ args_map = {
     'out-header': {
         'default': False,
         'action': 'store_true',
-        'help': 'For csv and tsv: whether to include header in outpute file.'
+        'help': 'For csv and tsv: whether to include header in output file.'
     },
     'skill-col': {
         'default': 'skill_id',
@@ -95,11 +125,6 @@ args_map = {
         'action': 'store_true',
         'help': 'Whether to clean data. Cleaning categorizes skill ids and turns correctnesses into binary variables. \
                  Maximum correctness value per skill id is considered as correct for correctness binarization.'
-    },
-    'is-grouped': {
-        'default': False,
-        'action': 'store_true',
-        'help': 'Whether data is grouped into student attempts. This is redundant for "asc" format as it is always grouped.'
     },
     'group-data': {
         'default': False,

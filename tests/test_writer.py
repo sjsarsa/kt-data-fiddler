@@ -2,7 +2,7 @@ from unittest import TestCase
 import os
 from shared_test_data import data1
 
-import writer
+from src import writer
 
 tmpdir = 'test_tmp'
 

@@ -103,13 +103,34 @@ Run the command with argument --help for more information.
 """.format(col_description, col, df.columns.values, col_description.lower())
 
 
-def clean_data(data, skill_col, correct_col):
-    assert_column_exists(data, skill_col, 'Skill')
+def categorize(data, column, randomized=False):
+    data[column] = data[column].astype('category')
+    n_categories = len(data[column].cat.categories)
+    new_categories = np.random.permutation(n_categories) if randomized else np.arange(n_categories)
+    data[column].cat.categories = new_categories
+
+
+def clean_data(data, user_col, skill_col, correct_col, randomize_users=True):
+    """
+
+    :param pd.DataFrame data: data to clean
+    :param str user_col:
+    :param str skill_col:
+    :param str correct_col:
+    :param boolean randomize_users: whether to randomize user ids for anonymization
+    :return: pd.DataFrame, cleaned data
+    """
+
     # Categorize skill ids
-    data[skill_col] = data[skill_col].astype('category')
-    data[skill_col].cat.categories = range(len(data[skill_col].cat.categories))
-    assert_column_exists(data, correct_col, 'Exercise correctness')
+    assert_column_exists(data, skill_col, 'Skill')
+    categorize(data, skill_col, randomized=False)
+
+    # Categorize user ids
+    assert_column_exists(data, skill_col, 'Student')
+    categorize(data, user_col, randomized=randomize_users)
+
     # Convert correctness to binary
+    assert_column_exists(data, correct_col, 'Exercise correctness')
     max_percentages_per_exercise = data.groupby([skill_col])[correct_col].max().to_dict()
     max_pass_percentage = data[skill_col].apply(lambda x: max_percentages_per_exercise[x])
     data[correct_col] = ((data[correct_col] == max_pass_percentage) * data[correct_col]).apply(np.ceil).apply(int)

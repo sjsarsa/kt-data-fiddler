@@ -1,20 +1,10 @@
 import argparse
-import os
-from os import path as osp
 from sklearn.model_selection import KFold
 
-import numpy as np
 import pandas as pd
-import conf
-import reader
-import utils
-import writer
-
-
-class Args(object):
-    def __init__(self, args_dict):
-        for key, val in args_dict.items():
-            self.__dict__[key] = val['default']
+import arg_conf
+from src import reader, util
+from src import writer
 
 
 def save_data(args, out_data):
@@ -33,18 +23,18 @@ def save_data(args, out_data):
 
 def show_stats(data, format, student_col, exercise_col, skill_col, correct_col):
     def round_to_k(x):
-        return f'{int(round(x, -3) / 1000)}k'
+        return f'{int(round(x, -3) / 1000)}'
 
     usecols = [student_col, skill_col, correct_col]
     if exercise_col != skill_col and exercise_col is not None:
         usecols.append(exercise_col)
 
-    grouped = utils.group_data(data[usecols].dropna(), student_col)
+    grouped = util.group_data(data[usecols].dropna(), student_col)
     stats_dict = {
         'Max attempts': grouped[student_col].apply(len).max(),
         'Students': len(grouped),
         'Records': round_to_k(len(data)),
-        'Correct count': round_to_k(sum(data[correct_col])),
+        'Correct count': round_to_k(data[correct_col].sum()),
         'Exercise tags': len(data[exercise_col].unique()) if exercise_col is not None else len(data[skill_col].unique()),
         'Skill tags': len(data[skill_col].unique()) if exercise_col is not None and skill_col != exercise_col else '-'
     }
@@ -68,10 +58,9 @@ def show_stats(data, format, student_col, exercise_col, skill_col, correct_col):
 
 def fiddle(args):
     if args is None:
-        args = Args(conf.args_map)
+        args = arg_conf.Args(arg_conf.converter_args_map)
 
-    print('Reading data...')
-    in_data = reader.read(args.in_file, args.in_format)
+    in_data = reader.read_kt_data(args.in_file, args.in_format)
 
     use_cols = [args.user_col, args.correct_col, args.skill_col]
     if args.exercise_col is not None:
@@ -79,7 +68,7 @@ def fiddle(args):
 
     if any([use_col not in in_data.columns for use_col in use_cols]):
         raise ValueError("""
-Invalid columns provided: 
+Invalid columns provided:
     skill col: {}
     correct col: {}
     user col: {}
@@ -94,15 +83,13 @@ Found columns:
         out_data = in_data[use_cols].dropna()
         print('Data rows after dropping nan rows: {}'.format(len(out_data)))
         print('Categorizing skill_column and ensuring correctness is a binary variable...')
-        out_data = utils.clean_data(out_data, skill_col=args.skill_col, correct_col=args.correct_col)
+        out_data = util.clean_data(out_data, user_col=args.user_col, skill_col=args.skill_col, correct_col=args.correct_col)
     else:
-        print('Data rows before dropping nan rows: {}'.format(len(in_data)))
         out_data = in_data
-        print('Data rows after dropping nan rows: {}'.format(len(out_data.dropna())))
 
     if args.shuffle:
-        grouped = utils.group_data(out_data, args.user_col)
-        out_data = utils.ungroup_data(grouped.sample(frac=1).reset_index(drop=True))
+        grouped = util.group_data(out_data, args.user_col)
+        out_data = util.ungroup_data(grouped.sample(frac=1).reset_index(drop=True))
 
     show_stats(out_data, args.stat_format, args.user_col, args.exercise_col, args.skill_col, args.correct_col)
 
@@ -120,7 +107,7 @@ def save_to_train_test(out_data, args):
     print('Wrote', test_out_file)
 
     n_valid = 0
-    if args.validation_rate > 0 and args.validation_rate < 1:
+    if args.validation_rate is not None and 0 < args.validation_rate < 1:
         n_valid = int(len(out_data) * args.validation_rate)
         validation_out_file = out_file + '.valid'
         writer.write(out_data.iloc[n_test:n_test + n_valid], validation_out_file, args.out_format, args.user_col,
@@ -137,31 +124,20 @@ def save_to_kfold(out_data, args):
     out_file = args.out_file or args.in_file
     kfold = KFold(n_splits=args.kfold, shuffle=args.shuffle)
 
-    for i, (train_i, test_i) in enumerate(kfold.split(out_data)):
-        for set_name, set_index in [('train', train_i), ('test', test_i)]:
-            filename = '{}.{}.{}'.format(out_file, set_name, i)
-            writer.write(out_data.iloc[set_index], filename, args.out_format, args.user_col, args.skill_col,
+    users = out_data[args.user_col].unique()
+
+    for i, (train_i, test_i) in enumerate(kfold.split(users)):
+        # Train-test split
+        for split_name, split_index in [('train', train_i), ('test', test_i)]:
+            filename = f'{out_file}.{split_name}.{i}'
+            split_data = out_data[out_data[args.user_col].isin(users[split_index])].copy()
+            writer.write(split_data, filename, args.out_format, args.user_col, args.skill_col,
                          args.correct_col, args.exercise_col)
             print('Wrote', filename)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Parametrized knowledge tracing done simple, maybe',
+    parser = argparse.ArgumentParser(description='Knowledge Tracing Data converter',
                                      formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('in_file')
-    parser.add_argument('out_file', nargs='?')
-    for key, val in conf.args_map.items():
-        if val.get('action'):
-            parser.add_argument('--' + key,
-                                default=val.get('default'),
-                                action=val.get('action'),
-                                help=str(val.get('help') or '') + '(default: %(default)s)')
-        else:
-            parser.add_argument('--' + key,
-                                default=val.get('default'),
-                                nargs=val.get('nargs'),
-                                help=str(val.get('help') or '') + '(default: %(default)s)',
-                                choices=val.get('choices'),
-                                type=val.get('type'))
-    args = parser.parse_args()
+    args = arg_conf.parse_args(parser, arg_conf.converter_args_map)
     fiddle(args)

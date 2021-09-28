@@ -1,13 +1,14 @@
 import pandas as pd
-from utils import group_data, ungroup_data
+
+from src.util import ungroup_data
 
 
-def read_csv(filepath):
-    return pd.read_csv(filepath, encoding='latin', low_memory=False)
+def read_csv(filepath, usecols=None):
+    return pd.read_csv(filepath, encoding='latin', low_memory=False, usecols=usecols)
 
 
-def read_tsv(filepath):
-    return pd.read_csv(filepath, encoding='latin', low_memory=False, sep='\t')
+def read_tsv(filepath, usecols=None):
+    return pd.read_csv(filepath, encoding='latin', low_memory=False, sep='\t', usecols=usecols)
 
 
 def read_asc(filepath, student_column, skill_column, correct_column):
@@ -62,7 +63,14 @@ read_func_map = {
 }
 
 
-def read(filepath, format='csv', student_column='user_id', skill_column='skill_id', correct_column='correct'):
+def read_results(filepath, format='csv', usecols=None):
+    print('Reading data...')
+    assert format != 'asc', 'asc format is supported only for conversion'
+    return read_func_map[format](filepath, usecols=usecols)
+
+
+def read_kt_data(filepath, format='csv', student_column='user_id', skill_column='skill_id', correct_column='correct'):
+    print('Reading data...')
     if format == 'asc':
         return read_asc(filepath, student_column, skill_column, correct_column)
     return read_func_map[format](filepath)

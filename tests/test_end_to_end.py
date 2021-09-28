@@ -4,15 +4,14 @@ import pandas as pd
 import shutil
 import os
 import numpy as np
+from shared_test_data import dict_to_obj, test_csv_filepath, test_simple_csv_filepath, test_asc_filepath
 
-from shared_test_data import test_csv_filepath, test_asc_filepath, dict_to_obj
-
-import main
-import conf
+import converter
+import arg_conf
 
 tmpdir = 'tmp_test'
-args = {k: v['default'] for k, v in conf.args_map.items()}
-args['in-file'] = 'data/assistments2009-skill-builders-corrected_1000.csv'
+args = {k: v['default'] for k, v in arg_conf.converter_args_map.items()}
+args['in-file'] = test_csv_filepath
 args['out-file'] = tmpdir + '/tmp.tmp'
 args['in-format'] = 'csv'
 args['out-format'] = 'csv'
@@ -31,7 +30,7 @@ class EndToEndTest(TestCase):
     def test_from_csv_equals_to_csv(self):
         test_args = args.copy()
         test_args['out-file'] = tmpdir + '/tmp.csv'
-        main.fiddle(dict_to_obj(test_args))
+        converter.fiddle(dict_to_obj(test_args))
 
         expected = pd.read_csv(test_args['in-file'])
         created = pd.read_csv(test_args['out-file'])
@@ -42,7 +41,7 @@ class EndToEndTest(TestCase):
     def test_from_tsv_equals_to_tsv(self):
         test_args = args.copy()
         test_args['out-file'] = tmpdir + '/tmp.tsv'
-        main.fiddle(dict_to_obj(test_args))
+        converter.fiddle(dict_to_obj(test_args))
 
         expected = pd.read_csv(test_args['in-file'])
         created = pd.read_csv(test_args['out-file'])
@@ -50,13 +49,13 @@ class EndToEndTest(TestCase):
 
     def test_from_csv_to_yudelson_bkt(self):
         test_args = args.copy()
-        test_args['in-file'] = 'data/simple.csv'
+        test_args['in-file'] = test_simple_csv_filepath
         test_args['out-file'] = tmpdir + '/tmp.tsv'
         test_args['exercise-col'] = 'exercise_id'
         test_args['in-format'] = 'csv'
         test_args['out-format'] = 'yudelson-bkt'
 
-        main.fiddle(dict_to_obj(test_args))
+        converter.fiddle(dict_to_obj(test_args))
 
         expected = pd.read_csv(test_args['in-file'])
 
@@ -74,11 +73,11 @@ class EndToEndTest(TestCase):
 
     def test_from_asc_equals_to_asc(self):
         test_args = args.copy()
-        test_args['in-file'] = 'data/test.asc'
+        test_args['in-file'] = test_asc_filepath
         test_args['out-file'] = tmpdir + '/tmp.asc'
         test_args['in-format'] = 'asc'
         test_args['out-format'] = 'asc'
-        main.fiddle(dict_to_obj(test_args))
+        converter.fiddle(dict_to_obj(test_args))
 
         self.assertTrue(filecmp.cmp(test_args['in-file'], test_args['out-file']))
 
@@ -91,7 +90,7 @@ class EndToEndTest(TestCase):
         test_data_expected_len = int(original_data_len * test_args.test_rate)
         train_data_expected_len = original_data_len - test_data_expected_len
 
-        main.fiddle(test_args)
+        converter.fiddle(test_args)
         self.assertEqual(train_data_expected_len, len(pd.read_csv(test_args.out_file + '.train')))
         self.assertEqual(test_data_expected_len, len(pd.read_csv(test_args.out_file + '.test')))
 
@@ -105,7 +104,7 @@ class EndToEndTest(TestCase):
         test_data_expected_len = int(original_data_len * test_args.test_rate)
         validation_data_expected_len = int(original_data_len * test_args.validation_rate)
         train_data_expected_len = original_data_len - test_data_expected_len - validation_data_expected_len
-        main.fiddle(test_args)
+        converter.fiddle(test_args)
 
         self.assertEqual(train_data_expected_len, len(pd.read_csv(test_args.out_file + '.train')))
         self.assertEqual(test_data_expected_len, len(pd.read_csv(test_args.out_file + '.test')))
