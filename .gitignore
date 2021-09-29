@@ -11,9 +11,6 @@
 triton*
 slurm*
 
-# Data (too big for free git)
-data/
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
